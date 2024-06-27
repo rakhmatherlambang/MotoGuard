@@ -22,7 +22,7 @@ int jedaPermintaanBot = 1000;
 unsigned long waktuTerakhirBotJalan;
 
 // Mengatur SoftwareSerial pada pin D1 (RX) dan D2 (TX)
-SoftwareSerial GPSSerial(D1, D2);
+SoftwareSerial GPSSerial(D2, D1);
 TinyGPSPlus gps;
 
 // Mendefinisikan pin untuk SW-420 dan Buzzer
