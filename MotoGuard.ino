@@ -6,8 +6,8 @@
 #include <SoftwareSerial.h>
 
 // SSID dan Password WiFi
-const char* ssid = "RIDHO FERNANDO";
-const char* password = "ridho1710";
+const char* ssid = " ";
+const char* password = " ";
 
 // Inisialisasi Bot Token
 #define BOTtoken "7206639866:AAEK1GmIGdeKUc_CTlO3FPQKQIKZtFf2XSw"  // Bot Token dari BotFather
