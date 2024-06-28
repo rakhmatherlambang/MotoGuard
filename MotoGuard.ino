@@ -6,8 +6,8 @@
 #include <SoftwareSerial.h>
 
 // SSID dan Password WiFi
-const char* ssid = "FBR3";
-const char* password = "08121969";
+const char* ssid = "RIDHO FERNANDO";
+const char* password = "ridho1710";
 
 // Inisialisasi Bot Token
 #define BOTtoken "7206639866:AAEK1GmIGdeKUc_CTlO3FPQKQIKZtFf2XSw"  // Bot Token dari BotFather
@@ -32,6 +32,9 @@ const int pinBuzzer = D6;
 // Flag untuk menghindari pengiriman alert ganda
 bool getaranTerdeteksi = false;
 
+// Flag untuk mengatur apakah buzzer dibisukan
+bool buzzerDibisukan = false;
+
 // Fungsi untuk menangani pesan baru
 void tanganiPesanBaru(int jumlahPesanBaru) {
   Serial.println("tanganiPesanBaru");
@@ -50,9 +53,11 @@ void tanganiPesanBaru(int jumlahPesanBaru) {
 
     if (teks == "/start") {
       String kontrol = "Halo Paduka, " + namaPengirim + ". Ini Sistem MotoGuard.\n\n";
-      kontrol += "Gunakan Perintah Di Bawah Untuk Monitoring Lokasi Kendaraan dan Mengontrol alarm\n\n";
-      kontrol += "/Lokasi Untuk Mengetahui lokasi kendaraan saat ini \n";
-      kontrol += "/Bunyikan Untuk Membunyikan alarm selama 5 detik \n";
+      kontrol += "Gunakan Perintah Di Bawah Untuk Monitoring Lokasi Kendaraan dan Mengontrol Alarm.\n\n";
+      kontrol += "/Lokasi Untuk Mengetahui lokasi kendaraan saat ini. \n";
+      kontrol += "/Bunyikan Untuk Membunyikan alarm selama 5 detik. \n";
+      kontrol += "/Mute Untuk Membisukan buzzer saat getaran terdeteksi. \n";
+      kontrol += "/UnMute Untuk Mengaktifkan kembali buzzer saat getaran terdeteksi. \n";
       bot.sendMessage(idChat, kontrol, "");
       Serial.println("Mengirim respon /start");
     } else if (teks == "/Lokasi") {
@@ -70,11 +75,20 @@ void tanganiPesanBaru(int jumlahPesanBaru) {
         bot.sendMessage(idChat, "Data GPS Sedang tidak bisa diakses coba lagi sesaat.");
       }
     } else if (teks == "/Bunyikan") {
-      digitalWrite(pinBuzzer, HIGH);
-      delay(5000); // Buzzer menyala selama 5 detik
-      digitalWrite(pinBuzzer, LOW);
-      bot.sendMessage(idChat, "Alarm berbunyi selama 5 detik.", "");
+      for (int i = 0; i < 3; i++) {
+        tone(pinBuzzer, 30, 5000);
+        delay(300);
+      }
+      bot.sendMessage(idChat, "Alarm telah berbunyi selama 5 detik.", "");
       Serial.println("Buzzer berbunyi selama 5 detik");
+    } else if (teks == "/Mute") {
+      buzzerDibisukan = true;
+      bot.sendMessage(idChat, "Buzzer telah dibisukan. Getaran tidak akan mengaktifkan alarm.\n /UnMute untuk menghidupkan kembali.", "");
+      Serial.println("Buzzer dibisukan");
+    } else if (teks == "/UnMute") {
+      buzzerDibisukan = false;
+      bot.sendMessage(idChat, "Buzzer telah diaktifkan kembali. Getaran akan mengaktifkan alarm.", "");
+      Serial.println("Buzzer diaktifkan kembali");
     } else {
       bot.sendMessage(idChat, "Masukkan kata kunci yang valid");
       Serial.println("Masukkan kata kunci yang valid");
@@ -127,15 +141,18 @@ void loop() {
     waktuTerakhirBotJalan = millis();
   }
 
-  // Cek sensor SW-420
+  // Cek sensor SW-420 
   if (digitalRead(pinSW420) == HIGH) {
     if (!getaranTerdeteksi) {
       getaranTerdeteksi = true;
 
-      // Aktifkan Buzzer
-      digitalWrite(pinBuzzer, HIGH);
-      delay(5000); // Buzzer menyala selama 5 detik
-      digitalWrite(pinBuzzer, LOW);
+      // Jika buzzer tidak dibisukan, aktifkan buzzer
+      if (!buzzerDibisukan) {
+          for (int i = 0; i < 3; i++) {
+          tone(pinBuzzer, 30, 5000);
+          delay(300);
+        }
+      }
 
       // Baca data GPS sampai lokasi yang valid diperoleh
       unsigned long waktuMulai = millis();
@@ -149,7 +166,7 @@ void loop() {
           float latSekarang = gps.location.lat();
           float lngSekarang = gps.location.lng();
 
-          String lokasi = "Ada Getaran terdeteksi di kendaraan anda, Lokasi Kendaraan: https://www.google.com/maps/place/";
+          String lokasi = "Ada Getaran terdeteksi di kendaraan anda!, Lokasi Kendaraan: https://www.google.com/maps/place/";
           lokasi += String(latSekarang, 6);
           lokasi += ",";
           lokasi += String(lngSekarang, 6);
